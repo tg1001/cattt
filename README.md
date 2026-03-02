@@ -1,2 +1,1 @@
-# cataract_detection_using_smartphone
-# cattt
+# Cataract.net
