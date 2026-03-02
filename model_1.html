@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CataractNet | Screening</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #0d1220;
+  --bg3: #111825;
+  --card-bg: #111625;
+  --accent: #00d2ff;
+  --accent2: #0080ff;
+  --accent-glow: rgba(0,210,255,0.4);
+  --glow: rgba(0,210,255,0.15);
+  --text: #ffffff;
+  --text-secondary: #a0aab5;
+  --muted: #6b7890;
+  --border: rgba(0,210,255,0.12);
+  --border2: rgba(255,255,255,0.06);
+  --nav-bg: rgba(10,14,23,0.88);
+
+  --sev-high: #ff4d6d;
+  --sev-high-bg: rgba(255,77,109,0.08);
+  --sev-high-border: rgba(255,77,109,0.25);
+  --sev-mod: #ffb347;
+  --sev-mod-bg: rgba(255,179,71,0.08);
+  --sev-mod-border: rgba(255,179,71,0.25);
+  --sev-low: #7eb8ff;
+  --sev-low-bg: rgba(126,184,255,0.08);
+  --sev-low-border: rgba(126,184,255,0.25);
+  --sev-clear: #00d2a0;
+  --sev-clear-bg: rgba(0,210,160,0.08);
+  --sev-clear-border: rgba(0,210,160,0.25);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "DM Sans", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+}
+
+/* ── NAV (same as parent) ── */
+nav {
+  position:fixed; top:18px; left:50%; transform:translateX(-50%);
+  z-index:1000;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  border-radius:50px;
+  padding:8px 22px;
+  display:flex; align-items:center; gap:4px;
+  white-space:nowrap;
+  box-shadow:0 4px 40px rgba(0,0,0,0.6),0 0 0 1px rgba(0,210,255,0.05);
+}
+.nav-logo {
+  font-family:"DM Serif Display",serif;
+  font-size:0.95rem; color:var(--accent);
+  margin-right:10px; letter-spacing:0.03em;
+  display:flex; align-items:center; gap:6px;
+  text-decoration:none;
+}
+nav a {
+  color:var(--text-secondary); text-decoration:none;
+  font-size:0.77rem; font-weight:500;
+  padding:5px 12px; border-radius:30px;
+  transition:all 0.25s; letter-spacing:0.01em;
+}
+nav a:hover, nav a.active { color:var(--accent); background:rgba(0,210,255,0.1); }
+.nav-cta { background:rgba(0,210,255,0.1)!important; border:1px solid rgba(0,210,255,0.3)!important; color:var(--accent)!important; }
+.nav-cta:hover { background:var(--accent)!important; color:var(--bg)!important; }
+
+/* ════════════════════════════════════════
+   SCREENING SECTION
+════════════════════════════════════════ */
+#screening {
+  min-height: 100vh;
+  padding: 110px 8% 80px;
+  background: radial-gradient(circle at 80% 20%, #131e38 0%, var(--bg) 55%);
+  position: relative;
+  overflow: hidden;
+}
+.scan-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(0,210,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,210,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+.section-label {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(0,210,255,0.08); border:1px solid rgba(0,210,255,0.2);
+  color:var(--accent); font-size:0.7rem; font-family:"JetBrains Mono",monospace;
+  padding:5px 14px; border-radius:30px; margin-bottom:20px;
+  letter-spacing:0.1em; text-transform:uppercase;
+}
+.section-label span { width:6px; height:6px; background:var(--accent); border-radius:50%; animation:blink 2s infinite; display:inline-block; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.screen-title {
+  font-family:"DM Serif Display",serif;
+  font-size:clamp(1.9rem,3.5vw,2.8rem);
+  line-height:1.15; margin-bottom:8px;
+  background:linear-gradient(135deg,#fff 40%,#a5d8ff 75%,var(--accent));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.screen-sub {
+  color:var(--text-secondary); font-size:0.9rem; margin-bottom:2.5rem;
+}
+
+/* ── MAIN GRID ── */
+.screen-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── LEFT PANEL ── */
+.upload-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tab switcher */
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--border2);
+  background: rgba(0,0,0,0.2);
+}
+.tab-btn {
+  flex: 1; padding: 13px 10px;
+  background: none; border: none;
+  color: var(--muted); font-family:"DM Sans",sans-serif;
+  font-size: 0.78rem; font-weight: 500;
+  cursor: pointer; display:flex; align-items:center; justify-content:center; gap:7px;
+  transition: all 0.25s; border-bottom: 2px solid transparent;
+  letter-spacing:0.01em;
+}
+.tab-btn:hover { color:var(--text-secondary); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background:rgba(0,210,255,0.04); }
+.tab-btn svg { flex-shrink:0; }
+
+/* Tab panes */
+.tab-pane { display:none; padding:24px; }
+.tab-pane.active { display:block; }
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed rgba(0,210,255,0.2);
+  border-radius: 14px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  background: rgba(0,210,255,0.02);
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent);
+  background: rgba(0,210,255,0.06);
+  box-shadow: 0 0 30px rgba(0,210,255,0.08);
+}
+.drop-zone input[type="file"] {
+  position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+}
+.dz-icon {
+  width: 52px; height: 52px; margin: 0 auto 14px;
+  background: rgba(0,210,255,0.08); border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+}
+.dz-title { font-weight:600; font-size:0.95rem; margin-bottom:5px; }
+.dz-hint { color:var(--muted); font-size:0.78rem; }
+.dz-hint span { color:var(--accent); cursor:pointer; }
+
+/* Paste zone */
+.paste-zone {
+  border: 2px dashed rgba(0,210,255,0.2);
+  border-radius:14px; padding:40px 20px;
+  text-align:center; cursor:pointer;
+  background:rgba(0,210,255,0.02); transition:all 0.3s;
+  position:relative;
+  min-height:180px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  outline:none;
+}
+.paste-zone:focus, .paste-zone.focused {
+  border-color:var(--accent); background:rgba(0,210,255,0.06);
+  box-shadow:0 0 0 3px rgba(0,210,255,0.1);
+}
+.paste-zone .kbd {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+  padding:4px 11px; border-radius:7px;
+  font-family:"JetBrains Mono",monospace; font-size:0.75rem;
+  color:var(--text-secondary); margin-top:8px;
+}
+
+/* Webcam zone */
+.webcam-wrap {
+  border-radius:14px; overflow:hidden;
+  background:#000; position:relative;
+  aspect-ratio:4/3; width:100%;
+}
+#webcamVideo {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.webcam-overlay {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.5);
+}
+.webcam-scan-line {
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--accent); box-shadow:0 0 10px var(--accent);
+  animation: wcScan 2.5s infinite linear; opacity:0; pointer-events:none;
+}
+@keyframes wcScan { 0%{top:0%;opacity:0} 5%{opacity:0.7} 95%{opacity:0.7} 100%{top:100%;opacity:0} }
+.webcam-btns { display:flex; gap:10px; margin-top:12px; }
+.wc-btn {
+  flex:1; padding:10px; border-radius:10px;
+  border:1px solid var(--border2); background:transparent;
+  color:var(--text-secondary); font-family:"DM Sans",sans-serif;
+  font-size:0.8rem; font-weight:500; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  transition:all 0.25s;
+}
+.wc-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.15); }
+.wc-btn.primary { border-color:rgba(0,210,255,0.3); color:var(--accent); }
+.wc-btn.primary:hover { background:rgba(0,210,255,0.1); }
+.wc-btn:disabled { opacity:0.35; cursor:not-allowed; }
+
+/* Preview */
+.img-preview-wrap {
+  display:none; position:relative; border-radius:12px; overflow:hidden;
+  background:#000; aspect-ratio:1/1;
+  border:1px solid var(--border2);
+}
+.img-preview-wrap.show { display:block; }
+#previewImg { width:100%; height:100%; object-fit:contain; display:block; }
+.preview-clear {
+  position:absolute; top:8px; right:8px;
+  background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.12);
+  color:var(--text-secondary); border-radius:50%; width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:14px; transition:all 0.2s;
+}
+.preview-clear:hover { color:var(--text); background:rgba(255,80,80,0.2); border-color:rgba(255,80,80,0.3); }
+
+/* Run button */
+.run-btn {
+  width:100%; margin-top:18px; padding:14px;
+  background:transparent; border:2px solid var(--accent); color:var(--accent);
+  font-family:"DM Sans",sans-serif; font-size:0.95rem; font-weight:600;
+  border-radius:50px; cursor:pointer; letter-spacing:0.03em;
+  transition:all 0.3s;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  position:relative; overflow:hidden;
+}
+.run-btn:hover:not(:disabled) {
+  background:var(--accent); color:var(--bg);
+  box-shadow:0 0 30px var(--accent-glow);
+}
+.run-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.run-btn .spinner {
+  width:18px; height:18px; border:2px solid transparent;
+  border-top-color:currentColor; border-radius:50%;
+  animation:spin 0.8s linear infinite; display:none;
+}
+@keyframes spin { to{ transform:rotate(360deg); } }
+.run-btn.loading .spinner { display:block; }
+.run-btn.loading .btn-label { opacity:0.7; }
+
+/* Disclaimer */
+.disclaimer-bar {
+  margin-top:14px; padding:10px 14px;
+  background:rgba(255,179,71,0.06); border:1px solid rgba(255,179,71,0.15);
+  border-radius:10px; font-size:0.72rem; color:var(--muted);
+  display:flex; align-items:flex-start; gap:8px;
+}
+.disclaimer-bar svg { flex-shrink:0; margin-top:1px; }
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  display:flex; flex-direction:column; gap:1.5rem;
+}
+
+/* Result card */
+.result-card {
+  background:var(--card-bg);
+  border:1px solid var(--border2);
+  border-radius:20px; padding:26px;
+  transition:border-color 0.4s, box-shadow 0.4s;
+}
+.result-card.show-result { border-color:var(--active-color, var(--accent)); box-shadow:0 0 40px var(--active-glow, var(--glow)); }
+
+.result-placeholder {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:40px 20px; text-align:center; gap:12px;
+}
+.result-placeholder svg { opacity:0.2; }
+.result-placeholder p { color:var(--muted); font-size:0.85rem; }
+
+.result-output { display:none; }
+.result-output.visible { display:block; }
+
+.result-header {
+  display:flex; align-items:center; gap:14px; margin-bottom:18px;
+}
+.sev-badge {
+  width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.result-label { font-family:"DM Serif Display",serif; font-size:1.35rem; line-height:1.2; }
+.result-sub { font-size:0.75rem; color:var(--muted); margin-top:2px; font-family:"JetBrains Mono",monospace; text-transform:uppercase; letter-spacing:0.08em; }
+
+/* Confidence bar */
+.conf-wrap { margin-bottom:18px; }
+.conf-label { font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; display:flex; justify-content:space-between; }
+.conf-bar-bg { height:6px; background:rgba(255,255,255,0.06); border-radius:6px; overflow:hidden; }
+.conf-bar-fill { height:100%; border-radius:6px; transition:width 0.8s cubic-bezier(.4,0,.2,1); }
+
+/* Info rows */
+.info-row {
+  border-top:1px solid var(--border2); padding:14px 0 0;
+  margin-top:14px;
+}
+.info-row-label {
+  font-size:0.68rem; color:var(--muted); text-transform:uppercase;
+  letter-spacing:0.1em; margin-bottom:5px; font-family:"JetBrains Mono",monospace;
+}
+.info-row-value { font-size:0.88rem; color:var(--text-secondary); line-height:1.5; }
+
+.action-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 13px; border-radius:30px;
+  font-size:0.77rem; font-weight:500; margin-top:8px;
+}
+
+.lens-badge {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:6px 14px; border-radius:8px;
+  font-size:0.78rem; margin-top:6px;
+  background:rgba(0,210,255,0.06); border:1px solid var(--border);
+  color:var(--text-secondary);
+}
+
+/* Result disclaimer */
+.result-disclaimer {
+  font-size:0.7rem; color:var(--muted); margin-top:16px;
+  padding-top:14px; border-top:1px solid var(--border2);
+  display:flex; gap:7px; align-items:flex-start;
+}
+.result-disclaimer svg { flex-shrink:0; margin-top:1px; }
+
+/* ── GUIDE CARD ── */
+.guide-card {
+  background:var(--card-bg);
+  border:1px solid var(--border2); border-radius:20px; padding:24px;
+}
+.guide-title {
+  font-family:"DM Serif Display",serif; font-size:1.1rem;
+  margin-bottom:16px; display:flex; align-items:center; gap:9px;
+}
+.guide-title svg { flex-shrink:0; }
+
+.guide-item {
+  display:flex; gap:14px; padding:12px 0;
+  border-bottom:1px solid var(--border2);
+}
+.guide-item:last-child { border-bottom:none; padding-bottom:0; }
+.guide-dot {
+  width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:6px;
+}
+.guide-item-title { font-size:0.85rem; font-weight:600; margin-bottom:3px; }
+.guide-item-body { font-size:0.78rem; color:var(--text-secondary); line-height:1.55; }
+.guide-item-action { font-size:0.73rem; margin-top:5px; }
+
+/* Important note */
+.important-note {
+  background:rgba(0,210,255,0.04); border:1px solid var(--border);
+  border-radius:12px; padding:14px 16px; margin-top:14px;
+  font-size:0.78rem; color:var(--text-secondary); line-height:1.6;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.important-note svg { flex-shrink:0; margin-top:2px; }
+
+
+/* ── HERO ── */
+#home {
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:120px 8% 80px;
+  background:radial-gradient(circle at top right,#1a233a 0%,var(--bg) 60%);
+  position:relative;overflow:hidden;
+}
+.scan-grid {
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,210,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,210,255,0.02) 1px,transparent 1px);
+  background-size:60px 60px;pointer-events:none;
+}
+.hero-content{max-width:580px;z-index:2}
+.hero-tag {
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,210,255,0.08);border:1px solid rgba(0,210,255,0.2);
+  color:var(--accent);font-size:0.7rem;font-family:"JetBrains Mono",monospace;
+  padding:5px 14px;border-radius:30px;margin-bottom:24px;
+  letter-spacing:0.1em;text-transform:uppercase;
+}
+.hero-tag::before{content:"";width:6px;height:6px;background:var(--accent);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+h1.hero-title {
+  font-family:"DM Serif Display",serif;
+  font-size:clamp(2.6rem,5.5vw,4.2rem);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:1.2rem;
+  background:linear-gradient(135deg,#fff 30%,#a5d8ff 70%,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-sub{font-size:1rem;color:var(--text-secondary);margin-bottom:2rem;line-height:1.8}
+.hero-sub strong{color:var(--text)}
+.cta-btn {
+  padding:0.9rem 2.2rem;background:transparent;
+  border:2px solid var(--accent);color:var(--accent);
+  font-weight:600;cursor:pointer;border-radius:50px;
+  transition:all 0.3s;text-decoration:none;display:inline-block;font-size:0.9rem;
+}
+.cta-btn:hover{background:var(--accent);color:var(--bg);box-shadow:0 0 25px var(--accent-glow)}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap;margin-top:2.5rem}
+.hstat{text-align:left}
+.hstat-num{font-family:"DM Serif Display",serif;font-size:2.2rem;color:var(--accent);display:block;line-height:1}
+.hstat-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:4px}
+
+/* ── EYE ANIMATION ── */
+.eye-container{
+  position:relative;width:280px;height:280px;
+  display:flex;justify-content:center;align-items:center;z-index:2;
+  flex-shrink:0;
+}
+.eye-socket {
+  width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#ffffff 0%,#dbe4eb 100%);
+  box-shadow:0 0 60px rgba(0,210,255,0.25),0 0 120px rgba(0,210,255,0.1);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.iris {
+  width:110px;height:110px;
+  background:radial-gradient(circle,#000 30%,#1a5cff 50%,var(--accent) 100%);
+  border-radius:50%;position:relative;
+  transition:transform 0.08s ease-out;
+  box-shadow:0 0 20px rgba(0,210,255,0.3);
+}
+.iris::after{content:"";position:absolute;top:20%;left:25%;width:22px;height:22px;background:rgba(255,255,255,0.85);border-radius:50%}
+.scan-line {
+  position:absolute;top:0;left:0;width:100%;height:3px;
+  background:var(--accent);box-shadow:0 0 12px var(--accent);
+  animation:scan 3s infinite linear;z-index:5;opacity:0.5;
+}
+@keyframes scan{0%{top:0%;opacity:0}10%{opacity:0.8}90%{opacity:0.8}100%{top:100%;opacity:0}}
+.eye-rings {
+  position:absolute;inset:-20px;
+  border:1px solid rgba(0,210,255,0.1);border-radius:50%;
+  animation:pulse-ring 3s infinite;
+}
+.eye-rings:nth-child(2){inset:-40px;animation-delay:1s}
+.eye-rings:nth-child(3){inset:-60px;animation-delay:2s}
+@keyframes pulse-ring{0%,100%{opacity:0;transform:scale(0.95)}50%{opacity:1;transform:scale(1)}}
+
+/* ── PROGRESSION ── */
+#progression {
+  display:flex;align-items:flex-start;gap:4rem;
+  padding:6rem 8%;
+  background:var(--bg2);
+}
+.prog-left {
+  flex:1;position:sticky;top:120px;
+  height:58vh;display:flex;align-items:center;justify-content:center;
+  background:var(--card-bg);border-radius:20px;overflow:hidden;
+  border:1px solid var(--border2);
+}
+.prog-img{width:100%;height:100%;object-fit:cover;transition:filter 0.6s ease}
+.prog-right{flex:1;padding-bottom:20vh}
+.prog-right h2{
+  font-family:"DM Serif Display",serif;
+  font-size:2.3rem;line-height:1.2;margin-bottom:1rem;
+}
+.prog-right h2 em{font-style:italic;color:var(--accent)}
+.prog-intro{color:var(--text-secondary);margin-bottom:2rem;font-size:0.95rem}
+.scroll-step {
+  min-height:38vh;display:flex;flex-direction:column;justify-content:center;
+  opacity:0.3;transition:opacity 0.5s;
+  border-left:3px solid rgba(255,255,255,0.08);
+  padding-left:1.8rem;margin-bottom:1.5rem;
+}
+.scroll-step.active{opacity:1;border-left-color:var(--accent)}
+.scroll-step h3{font-family:"DM Serif Display",serif;font-size:1.3rem;color:var(--text);margin-bottom:0.5rem}
+.scroll-step p{color:var(--text-secondary);font-size:0.88rem;line-height:1.7}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+
+/* ── FADE IN ── */
+.fade{opacity:0;transform:translateY(22px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade.in{opacity:1;transform:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  #home{flex-direction:column-reverse;text-align:center;padding-top:140px}
+  .hero-stats{justify-content:center}
+  .eye-container{width:200px;height:200px}
+  .eye-socket{width:185px;height:185px}
+  #progression{flex-direction:column;gap:2rem}
+  .prog-left{position:relative;top:0;height:40vh;width:100%}
+}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(0,210,255,0.2);border-radius:5px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+    CataractNet
+  </a>
+  <a href="index.html">Home</a>
+  <a href="index.html#progression">Vision</a>
+  <a href="index.html#problem">Problem</a>
+  <a href="index.html#data">Data</a>
+  <a href="model.html" class="active">Screening</a>
+  <a href="index_detailed.html" class="nav-cta">Technical Report</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════ HERO -->
+<section id="home">
+  <div class="scan-grid"></div>
+  <div class="hero-content fade">
+    <div class="hero-tag">AI for Healthcare · Research Report 2026</div>
+    <h1 class="hero-title">Accessible Eye Screening for Everyone</h1>
+    <p class="hero-sub">
+      Utilizing the <strong>CMPD</strong> to detect cataracts using standard smartphone photography. A calibrated ensemble deep learning framework designed for real-world, resource-limited screening environments.
+    </p>
+    <!-- <a href="#progression" class="cta-btn">Explore Research</a> -->
+        <a href="index_detailed.html" class="cta-btn">Explore Research</a>
+    <div class="hero-stats">
+      <div class="hstat"><span class="hstat-num">0.838</span><span class="hstat-label">Binary ROC-AUC</span></div>
+      <div class="hstat"><span class="hstat-num">93%</span><span class="hstat-label">Immature Recall</span></div>
+      <div class="hstat"><span class="hstat-num">2,876</span><span class="hstat-label">Total Images</span></div>
+      <div class="hstat"><span class="hstat-num">79.8%</span><span class="hstat-label">IOL Accuracy</span></div>
+    </div>
+  </div>
+  <div class="eye-container fade">
+    <div class="eye-rings"></div>
+    <div class="eye-rings"></div>
+    <div class="eye-rings"></div>
+    <div class="eye-socket">
+      <div class="scan-line"></div>
+      <div class="iris" id="eyeIris"></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ PROGRESSION -->
+<div id="progression" class="bg-alt" style="display:flex;align-items:flex-start;gap:4rem;padding:6rem 8%">
+  <div class="prog-left">
+    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=900"
+         class="prog-img" id="visionImg" alt="Vision simulation">
+  </div>
+  <div class="prog-right">
+    <h2>"Roughly <em>1 in 6 people</em> has cataract —"</h2>
+    <p class="prog-intro">Scroll to see how the disease physically alters and obscures vision over time, and why early detection matters.</p>
+    <div class="scroll-step" data-stage="0">
+      <h3>Healthy Vision</h3>
+      <p>Crisp detail and accurate color representation. No obstruction in the crystalline lens. Full contrast and sharp focal clarity — what healthy eyes see every day.</p>
+    </div>
+    <div class="scroll-step" data-stage="1">
+      <h3>Early Stage</h3>
+      <p>Mild clouding begins as protein aggregates form. Images appear slightly dull or dim. Often unnoticed by the patient. This is the optimal window for intervention.</p>
+    </div>
+    <div class="scroll-step" data-stage="2">
+      <h3>Immature Cataract</h3>
+      <p>Significant yellowing and distortion. Contrast is heavily reduced. Reading and driving become difficult. Protein aggregation increases intra-lenticular light scattering.</p>
+    </div>
+    <div class="scroll-step" data-stage="3">
+      <h3>Mature Cataract</h3>
+      <p>Severe obstruction. Vision is reduced to a murky, solid blur. Dense nuclear opacity dominates. Surgical intervention — lens replacement with IOL — is the only treatment.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+<!-- ═══════════════════════ SCREENING SECTION -->
+<section id="screening">
+  <div class="scan-grid"></div>
+
+  <div class="section-label"><span></span> Live Screening Tool</div>
+  <h1 class="screen-title">AI-Powered Cataract Screening</h1>
+  <p class="screen-sub">Upload, paste, or capture a fundus / slit-lamp eye image and receive an instant AI assessment.</p>
+
+  <div class="screen-grid">
+
+    <!-- ════════ LEFT: UPLOAD PANEL ════════ -->
+    <div class="upload-panel">
+
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="upload">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Upload File</span>
+        </button>
+        <button class="tab-btn" data-tab="paste">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>Paste Image</span>
+        </button>
+        <button class="tab-btn" data-tab="webcam">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7 16 12 23 17V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          <span>Webcam</span>
+        </button>
+      </div>
+
+      <!-- Upload tab -->
+      <div class="tab-pane active" id="tab-upload">
+        <div class="drop-zone" id="dropZone">
+          <input type="file" id="fileInput" accept="image/*">
+          <div class="dz-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <p class="dz-title">Drop image here</p>
+          <p class="dz-hint">or <span>browse files</span> &nbsp;·&nbsp; PNG, JPG, WEBP</p>
+        </div>
+        <div class="img-preview-wrap" id="uploadPreview">
+          <img id="previewImg" alt="Preview">
+          <button class="preview-clear" id="clearBtn" title="Remove image">✕</button>
+        </div>
+      </div>
+
+      <!-- Paste tab -->
+      <div class="tab-pane" id="tab-paste">
+        <div class="paste-zone" id="pasteZone" tabindex="0">
+          <div class="dz-icon" style="margin-bottom:12px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </div>
+          <p style="font-size:0.9rem;font-weight:500;margin-bottom:4px;">Click here, then paste your image</p>
+          <p style="color:var(--muted);font-size:0.78rem;">Copies from clipboard are accepted</p>
+          <div class="kbd">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+            Ctrl + V &nbsp;/&nbsp; ⌘V
+          </div>
+        </div>
+        <div class="img-preview-wrap" id="pastePreview">
+          <img id="pastePreviewImg" alt="Pasted preview">
+          <button class="preview-clear" id="pasteClearBtn" title="Remove image">✕</button>
+        </div>
+      </div>
+
+      <!-- Webcam tab -->
+      <div class="tab-pane" id="tab-webcam">
+        <div class="webcam-wrap">
+          <video id="webcamVideo" autoplay playsinline muted></video>
+          <canvas id="webcamCanvas" style="display:none"></canvas>
+          <div class="webcam-overlay" id="webcamOverlay">
+            <div style="text-align:center">
+              <div class="dz-icon" style="margin:0 auto 12px">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><path d="M23 7 16 12 23 17V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-secondary)">Camera not started</p>
+            </div>
+          </div>
+          <div class="webcam-scan-line" id="wcScanLine"></div>
+        </div>
+        <div class="webcam-btns">
+          <button class="wc-btn primary" id="startCamBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+            Start Camera
+          </button>
+          <button class="wc-btn" id="captureBtn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+            Capture
+          </button>
+          <button class="wc-btn" id="stopCamBtn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+            Stop
+          </button>
+        </div>
+        <div class="img-preview-wrap" id="webcamPreview" style="margin-top:14px">
+          <img id="webcamPreviewImg" alt="Captured frame">
+          <button class="preview-clear" id="webcamClearBtn" title="Remove">✕</button>
+        </div>
+      </div>
+
+      <!-- Run button -->
+      <div style="padding:0 24px 24px">
+        <button class="run-btn" id="runBtn" disabled>
+          <div class="spinner"></div>
+          <span class="btn-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Run Screening
+          </span>
+        </button>
+
+        <div class="disclaimer-bar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffb347" stroke-width="2"><path d="m10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Research &amp; educational use only. Not a clinical diagnostic device. Always consult a qualified ophthalmologist.
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ RIGHT PANEL ════════ -->
+    <div class="right-panel">
+
+      <!-- Result card -->
+      <div class="result-card" id="resultCard">
+
+        <!-- Placeholder -->
+        <div class="result-placeholder" id="resultPlaceholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+          <p>Upload an eye image and click<br><strong style="color:var(--text-secondary)">Run Screening</strong> to view the result here.</p>
+        </div>
+
+        <!-- Output -->
+        <div class="result-output" id="resultOutput">
+          <div class="result-header">
+            <div class="sev-badge" id="resultBadge">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div>
+              <div class="result-label" id="resultLabel">—</div>
+              <div class="result-sub" id="resultSub">—</div>
+            </div>
+          </div>
+
+          <!-- Confidence bars -->
+          <div class="conf-wrap">
+            <div class="conf-label">
+              <span>Cataract Probability</span>
+              <span id="confCataractPct">—</span>
+            </div>
+            <div class="conf-bar-bg">
+              <div class="conf-bar-fill" id="confCataractBar" style="width:0%;background:var(--accent)"></div>
+            </div>
+          </div>
+          <div class="conf-wrap">
+            <div class="conf-label">
+              <span>Healthy Lens Probability</span>
+              <span id="confHealthyPct">—</span>
+            </div>
+            <div class="conf-bar-bg">
+              <div class="conf-bar-fill" id="confHealthyBar" style="width:0%;background:var(--sev-clear)"></div>
+            </div>
+          </div>
+
+          <!-- Explanation -->
+          <div class="info-row">
+            <div class="info-row-label">Explanation</div>
+            <div class="info-row-value" id="resultNote">—</div>
+          </div>
+
+          <!-- Suggested Action -->
+          <div class="info-row">
+            <div class="info-row-label">Suggested Action</div>
+            <div class="info-row-value">
+              <div class="action-pill" id="actionPill">—</div>
+            </div>
+          </div>
+
+          <!-- Lens Type -->
+          <div class="info-row">
+            <div class="info-row-label">Lens Type (Context-Aware)</div>
+            <div class="info-row-value">
+              <div class="lens-badge" id="lensBadge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="lensType">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-disclaimer">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7890" stroke-width="2"><path d="m10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="resultDisclaimer">Research and educational use only. Not a diagnostic or clinical medical device.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guide card -->
+      <div class="guide-card">
+        <div class="guide-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          How to Read the Result
+        </div>
+
+        <div class="guide-item">
+          <div class="guide-dot" style="background:var(--sev-high)"></div>
+          <div>
+            <div class="guide-item-title" style="color:var(--sev-high)">Cataract Present</div>
+            <div class="guide-item-body">Clear imaging evidence of cataract detected. Lens opacity patterns are consistent with clinically significant cataract.</div>
+            <div class="guide-item-action" style="color:var(--sev-high)">→ Clinical evaluation by an eye specialist is recommended.</div>
+          </div>
+        </div>
+
+        <div class="guide-item">
+          <div class="guide-dot" style="background:var(--sev-mod)"></div>
+          <div>
+            <div class="guide-item-title" style="color:var(--sev-mod)">Likely Early (Immature) Cataract</div>
+            <div class="guide-item-body">Imaging patterns suggest early or immature cataract formation. Structural lens changes are present but not advanced.</div>
+            <div class="guide-item-action" style="color:var(--sev-mod)">→ Routine monitoring or clinical correlation is advised.</div>
+          </div>
+        </div>
+
+        <div class="guide-item">
+          <div class="guide-dot" style="background:var(--sev-low)"></div>
+          <div>
+            <div class="guide-item-title" style="color:var(--sev-low)">Likely Non-Cataract (Early Overlap)</div>
+            <div class="guide-item-body">No definitive cataract detected. Subtle lens patterns may overlap with very early features or normal physiological variation.</div>
+            <div class="guide-item-action" style="color:var(--sev-low)">→ No immediate action required. Monitor if symptoms develop.</div>
+          </div>
+        </div>
+
+        <div class="guide-item">
+          <div class="guide-dot" style="background:var(--sev-clear)"></div>
+          <div>
+            <div class="guide-item-title" style="color:var(--sev-clear)">No Cataract Detected</div>
+            <div class="guide-item-body">Lens appearance is consistent with a healthy lens. No imaging evidence of cataract is observed.</div>
+            <div class="guide-item-action" style="color:var(--sev-clear)">→ No follow-up required at this time.</div>
+          </div>
+        </div>
+
+        <div class="important-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>This tool is designed for <strong>screening and educational purposes</strong>. It does <strong>not</strong> replace a clinical eye examination by a licensed ophthalmologist.</span>
+        </div>
+      </div>
+    </div>
+    <!-- /right panel -->
+  </div>
+</section>
+
+<script>
+  // ── 1. Eye mouse tracking
+const iris = document.getElementById("eyeIris");
+document.addEventListener("mousemove", (e) => {
+  if (!iris) return;
+  const rect = iris.parentElement.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
+  const dist = Math.min(32, Math.hypot(e.clientX - cx, e.clientY - cy) / 10);
+  iris.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+});
+
+// ── 2. Cataract progression scroll
+const steps = document.querySelectorAll(".scroll-step");
+const vImg = document.getElementById("visionImg");
+const stages = [
+  {filter:"blur(0px) sepia(0%) brightness(100%)"},
+  {filter:"blur(3px) sepia(15%) brightness(92%)"},
+  {filter:"blur(10px) sepia(45%) brightness(76%)"},
+  {filter:"blur(28px) sepia(75%) brightness(58%)"}
+];
+window.addEventListener("scroll", () => {
+  let cur = 0;
+  steps.forEach((s, i) => {
+    const r = s.getBoundingClientRect();
+    if (r.top < window.innerHeight * 0.55) cur = i;
+  });
+  if (vImg) vImg.style.filter = stages[cur].filter;
+  steps.forEach((s, i) => s.classList.toggle("active", i === cur));
+});
+
+// ── 3. Fade-in observer
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add("in");
+  });
+}, {threshold: 0.1});
+document.querySelectorAll(".fade").forEach(el => io.observe(el));
+
+// ── 4. Active nav link
+const secs = document.querySelectorAll("section[id], div[id]");
+const links = document.querySelectorAll("nav a[href^='#']");
+window.addEventListener("scroll", () => {
+  let cur = "";
+  secs.forEach(s => { if (window.scrollY >= s.offsetTop - 160) cur = s.id; });
+  links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + cur));
+});
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const API_URL = "http://127.0.0.1:8000/predict";// ← update in production
+let currentBlob = null;
+let activeTab = "upload";
+let stream = null;
+
+// ═══════════════════════════════════════════
+// SEVERITY CONFIG
+// ═══════════════════════════════════════════
+const SEV = {
+  high:     { color:"#ff4d6d", bg:"rgba(255,77,109,0.12)",  border:"rgba(255,77,109,0.3)",  glow:"rgba(255,77,109,0.15)",  label:"High Risk" },
+  moderate: { color:"#ffb347", bg:"rgba(255,179,71,0.12)",  border:"rgba(255,179,71,0.3)",  glow:"rgba(255,179,71,0.15)",  label:"Moderate Risk" },
+  low:      { color:"#7eb8ff", bg:"rgba(126,184,255,0.12)", border:"rgba(126,184,255,0.3)", glow:"rgba(126,184,255,0.15)", label:"Low Risk" },
+  clear:    { color:"#00d2a0", bg:"rgba(0,210,160,0.12)",   border:"rgba(0,210,160,0.3)",   glow:"rgba(0,210,160,0.15)",   label:"Clear" }
+};
+
+// ═══════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + tab).classList.add("active");
+    activeTab = tab;
+    stopCamera();
+    resetImage();
+  });
+});
+
+// ═══════════════════════════════════════════
+// IMAGE HELPERS
+// ═══════════════════════════════════════════
+function setImage(blob, previewId, imgId) {
+  currentBlob = blob;
+  const url = URL.createObjectURL(blob);
+  const img = document.getElementById(imgId);
+  img.src = url;
+  document.getElementById(previewId).classList.add("show");
+  document.getElementById("runBtn").disabled = false;
+}
+
+function resetImage() {
+  currentBlob = null;
+  document.getElementById("runBtn").disabled = true;
+  ["uploadPreview","pastePreview","webcamPreview"].forEach(id => {
+    document.getElementById(id).classList.remove("show");
+  });
+}
+
+// ═══════════════════════════════════════════
+// UPLOAD / DROP
+// ═══════════════════════════════════════════
+const dz = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+
+fileInput.addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file) setImage(file, "uploadPreview", "previewImg");
+});
+dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("dragover"); });
+dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+dz.addEventListener("drop", e => {
+  e.preventDefault(); dz.classList.remove("dragover");
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith("image/")) setImage(file, "uploadPreview", "previewImg");
+});
+document.getElementById("clearBtn").addEventListener("click", () => {
+  resetImage(); fileInput.value = "";
+});
+
+// ═══════════════════════════════════════════
+// PASTE
+// ═══════════════════════════════════════════
+const pasteZone = document.getElementById("pasteZone");
+pasteZone.addEventListener("focus", () => pasteZone.classList.add("focused"));
+pasteZone.addEventListener("blur",  () => pasteZone.classList.remove("focused"));
+pasteZone.addEventListener("paste", handlePaste);
+document.addEventListener("paste", (e) => {
+  if (activeTab === "paste") handlePaste(e);
+});
+function handlePaste(e) {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith("image/")) {
+      const blob = item.getAsFile();
+      setImage(blob, "pastePreview", "pastePreviewImg");
+      break;
+    }
+  }
+}
+document.getElementById("pasteClearBtn").addEventListener("click", resetImage);
+
+// ═══════════════════════════════════════════
+// WEBCAM
+// ═══════════════════════════════════════════
+const video = document.getElementById("webcamVideo");
+const canvas = document.getElementById("webcamCanvas");
+const overlay = document.getElementById("webcamOverlay");
+const scanLine = document.getElementById("wcScanLine");
+
+document.getElementById("startCamBtn").addEventListener("click", async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:"user" } });
+    video.srcObject = stream;
+    overlay.style.display = "none";
+    scanLine.style.opacity = "0.6";
+    document.getElementById("captureBtn").disabled = false;
+    document.getElementById("stopCamBtn").disabled = false;
+    document.getElementById("startCamBtn").disabled = true;
+  } catch(err) {
+    alert("Camera access denied or unavailable: " + err.message);
+  }
+});
+
+document.getElementById("captureBtn").addEventListener("click", () => {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    setImage(blob, "webcamPreview", "webcamPreviewImg");
+    stopCamera();
+  }, "image/jpeg", 0.92);
+});
+
+document.getElementById("stopCamBtn").addEventListener("click", stopCamera);
+document.getElementById("webcamClearBtn").addEventListener("click", () => {
+  resetImage();
+  document.getElementById("webcamPreview").classList.remove("show");
+});
+
+function stopCamera() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  video.srcObject = null;
+  overlay.style.display = "flex";
+  scanLine.style.opacity = "0";
+  document.getElementById("captureBtn").disabled = true;
+  document.getElementById("stopCamBtn").disabled = true;
+  document.getElementById("startCamBtn").disabled = false;
+}
+
+// ═══════════════════════════════════════════
+// RUN SCREENING
+// ═══════════════════════════════════════════
+const runBtn = document.getElementById("runBtn");
+runBtn.addEventListener("click", async () => {
+  if (!currentBlob) return;
+  runBtn.disabled = true;
+  runBtn.classList.add("loading");
+  clearResult();
+
+  const formData = new FormData();
+  formData.append("file", currentBlob, "eye_image.jpg");
+
+  try {
+    const res = await fetch(API_URL, { method:"POST", body: formData });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({detail:"Unknown error"}));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    renderResult(data);
+  } catch(err) {
+    renderError(err.message);
+  } finally {
+    runBtn.classList.remove("loading");
+    runBtn.disabled = false;
+  }
+});
+
+// ═══════════════════════════════════════════
+// RENDER RESULT
+// ═══════════════════════════════════════════
+function clearResult() {
+  document.getElementById("resultPlaceholder").style.display = "flex";
+  const out = document.getElementById("resultOutput");
+  out.classList.remove("visible");
+  const card = document.getElementById("resultCard");
+  card.classList.remove("show-result");
+  card.style.removeProperty("--active-color");
+  card.style.removeProperty("--active-glow");
+}
+
+function renderResult(data) {
+  const sev = data.severity_level || "clear";
+  const cfg = SEV[sev] || SEV["clear"];
+
+  document.getElementById("resultPlaceholder").style.display = "none";
+
+  // header badge
+  const badge = document.getElementById("resultBadge");
+  badge.style.background = cfg.bg;
+  badge.style.color = cfg.color;
+  badge.style.border = "1px solid " + cfg.border;
+
+  document.getElementById("resultLabel").textContent = data.assessment;
+  document.getElementById("resultSub").textContent = cfg.label;
+
+  // confidence
+  const catPct = Math.round((data.confidence?.cataract ?? 0) * 100);
+  const hlPct  = Math.round((data.confidence?.no_cataract ?? 0) * 100);
+  document.getElementById("confCataractPct").textContent = catPct + "%";
+  document.getElementById("confHealthyPct").textContent  = hlPct + "%";
+  setTimeout(() => {
+    document.getElementById("confCataractBar").style.width = catPct + "%";
+    document.getElementById("confCataractBar").style.background = cfg.color;
+    document.getElementById("confHealthyBar").style.width  = hlPct + "%";
+  }, 80);
+
+  // note / action
+  document.getElementById("resultNote").textContent = data.note;
+
+  const ap = document.getElementById("actionPill");
+  ap.textContent = data.suggested_action;
+  ap.style.background = cfg.bg;
+  ap.style.border = "1px solid " + cfg.border;
+  ap.style.color = cfg.color;
+
+  // lens
+  document.getElementById("lensType").textContent = data.lens_type;
+
+  // disclaimer
+  document.getElementById("resultDisclaimer").textContent = data.disclaimer;
+
+  // card glow
+  const card = document.getElementById("resultCard");
+  card.style.setProperty("--active-color", cfg.border);
+  card.style.setProperty("--active-glow", cfg.glow);
+  card.classList.add("show-result");
+
+  document.getElementById("resultOutput").classList.add("visible");
+  document.getElementById("resultCard").scrollIntoView({ behavior:"smooth", block:"nearest" });
+}
+
+function renderError(msg) {
+  const fakeData = {
+    severity_level: "moderate",
+    assessment: "Screening Error",
+    note: msg,
+    suggested_action: "Please check the image and try again.",
+    lens_type: "—",
+    disclaimer: "Research and educational use only.",
+    confidence: { cataract: 0, no_cataract: 0 }
+  };
+  renderResult(fakeData);
+  document.getElementById("resultSub").textContent = "Error";
+  document.getElementById("confCataractBar").style.background = "var(--muted)";
+  document.getElementById("confHealthyBar").style.background  = "var(--muted)";
+}
+</script>
+</body>
+</html>
