@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CataractNet | Hero & Vision Progression</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #0d1220;
+  --bg3: #111825;
+  --card-bg: #111625;
+  --accent: #00d2ff;
+  --accent2: #0080ff;
+  --accent-glow: rgba(0,210,255,0.4);
+  --glow: rgba(0,210,255,0.15);
+  --text: #ffffff;
+  --text-secondary: #a0aab5;
+  --muted: #6b7890;
+  --border: rgba(0,210,255,0.12);
+  --border2: rgba(255,255,255,0.06);
+  --nav-bg: rgba(10,14,23,0.88);
+}
+*{margin:0;padding:0;box-sizing:border-box;scroll-behavior:smooth}
+body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+
+/* ── NAV ── */
+nav {
+  position:fixed;top:18px;left:50%;transform:translateX(-50%);
+  z-index:1000;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  border-radius:50px;
+  padding:8px 22px;
+  display:flex;align-items:center;gap:4px;
+  white-space:nowrap;
+  box-shadow:0 4px 40px rgba(0,0,0,0.6),0 0 0 1px rgba(0,210,255,0.05);
+  transition:all 0.3s;
+}
+.nav-logo {
+  font-family:"DM Serif Display",serif;
+  font-size:0.95rem;color:var(--accent);
+  margin-right:10px;letter-spacing:0.03em;
+  display:flex;align-items:center;gap:6px;
+}
+.nav-logo svg{flex-shrink:0}
+nav a {
+  color:var(--text-secondary);text-decoration:none;
+  font-size:0.77rem;font-weight:500;
+  padding:5px 12px;border-radius:30px;
+  transition:all 0.25s;letter-spacing:0.01em;
+}
+nav a:hover,nav a.active{color:var(--accent);background:rgba(0,210,255,0.1)}
+.nav-cta{background:rgba(0,210,255,0.1)!important;border:1px solid rgba(0,210,255,0.3)!important;color:var(--accent)!important}
+.nav-cta:hover{background:var(--accent)!important;color:var(--bg)!important}
+
+/* ── HERO ── */
+#home {
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:120px 8% 80px;
+  background:radial-gradient(circle at top right,#1a233a 0%,var(--bg) 60%);
+  position:relative;overflow:hidden;
+}
+.scan-grid {
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,210,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,210,255,0.02) 1px,transparent 1px);
+  background-size:60px 60px;pointer-events:none;
+}
+.hero-content{max-width:580px;z-index:2}
+.hero-tag {
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,210,255,0.08);border:1px solid rgba(0,210,255,0.2);
+  color:var(--accent);font-size:0.7rem;font-family:"JetBrains Mono",monospace;
+  padding:5px 14px;border-radius:30px;margin-bottom:24px;
+  letter-spacing:0.1em;text-transform:uppercase;
+}
+.hero-tag::before{content:"";width:6px;height:6px;background:var(--accent);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+h1.hero-title {
+  font-family:"DM Serif Display",serif;
+  font-size:clamp(2.6rem,5.5vw,4.2rem);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:1.2rem;
+  background:linear-gradient(135deg,#fff 30%,#a5d8ff 70%,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-sub{font-size:1rem;color:var(--text-secondary);margin-bottom:2rem;line-height:1.8}
+.hero-sub strong{color:var(--text)}
+.cta-btn {
+  padding:0.9rem 2.2rem;background:transparent;
+  border:2px solid var(--accent);color:var(--accent);
+  font-weight:600;cursor:pointer;border-radius:50px;
+  transition:all 0.3s;text-decoration:none;display:inline-block;font-size:0.9rem;
+}
+.cta-btn:hover{background:var(--accent);color:var(--bg);box-shadow:0 0 25px var(--accent-glow)}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap;margin-top:2.5rem}
+.hstat{text-align:left}
+.hstat-num{font-family:"DM Serif Display",serif;font-size:2.2rem;color:var(--accent);display:block;line-height:1}
+.hstat-label{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:4px}
+
+/* ── EYE ANIMATION ── */
+.eye-container{
+  position:relative;width:280px;height:280px;
+  display:flex;justify-content:center;align-items:center;z-index:2;
+  flex-shrink:0;
+}
+.eye-socket {
+  width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#ffffff 0%,#dbe4eb 100%);
+  box-shadow:0 0 60px rgba(0,210,255,0.25),0 0 120px rgba(0,210,255,0.1);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.iris {
+  width:110px;height:110px;
+  background:radial-gradient(circle,#000 30%,#1a5cff 50%,var(--accent) 100%);
+  border-radius:50%;position:relative;
+  transition:transform 0.08s ease-out;
+  box-shadow:0 0 20px rgba(0,210,255,0.3);
+}
+.iris::after{content:"";position:absolute;top:20%;left:25%;width:22px;height:22px;background:rgba(255,255,255,0.85);border-radius:50%}
+.scan-line {
+  position:absolute;top:0;left:0;width:100%;height:3px;
+  background:var(--accent);box-shadow:0 0 12px var(--accent);
+  animation:scan 3s infinite linear;z-index:5;opacity:0.5;
+}
+@keyframes scan{0%{top:0%;opacity:0}10%{opacity:0.8}90%{opacity:0.8}100%{top:100%;opacity:0}}
+.eye-rings {
+  position:absolute;inset:-20px;
+  border:1px solid rgba(0,210,255,0.1);border-radius:50%;
+  animation:pulse-ring 3s infinite;
+}
+.eye-rings:nth-child(2){inset:-40px;animation-delay:1s}
+.eye-rings:nth-child(3){inset:-60px;animation-delay:2s}
+@keyframes pulse-ring{0%,100%{opacity:0;transform:scale(0.95)}50%{opacity:1;transform:scale(1)}}
+
+/* ── PROGRESSION ── */
+#progression {
+  display:flex;align-items:flex-start;gap:4rem;
+  padding:6rem 8%;
+  background:var(--bg2);
+}
+.prog-left {
+  flex:1;position:sticky;top:120px;
+  height:58vh;display:flex;align-items:center;justify-content:center;
+  background:var(--card-bg);border-radius:20px;overflow:hidden;
+  border:1px solid var(--border2);
+}
+.prog-img{width:100%;height:100%;object-fit:cover;transition:filter 0.6s ease}
+.prog-right{flex:1;padding-bottom:20vh}
+.prog-right h2{
+  font-family:"DM Serif Display",serif;
+  font-size:2.3rem;line-height:1.2;margin-bottom:1rem;
+}
+.prog-right h2 em{font-style:italic;color:var(--accent)}
+.prog-intro{color:var(--text-secondary);margin-bottom:2rem;font-size:0.95rem}
+.scroll-step {
+  min-height:38vh;display:flex;flex-direction:column;justify-content:center;
+  opacity:0.3;transition:opacity 0.5s;
+  border-left:3px solid rgba(255,255,255,0.08);
+  padding-left:1.8rem;margin-bottom:1.5rem;
+}
+.scroll-step.active{opacity:1;border-left-color:var(--accent)}
+.scroll-step h3{font-family:"DM Serif Display",serif;font-size:1.3rem;color:var(--text);margin-bottom:0.5rem}
+.scroll-step p{color:var(--text-secondary);font-size:0.88rem;line-height:1.7}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+
+/* ── FADE IN ── */
+.fade{opacity:0;transform:translateY(22px);transition:opacity 0.7s ease,transform 0.7s ease}
+.fade.in{opacity:1;transform:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  #home{flex-direction:column-reverse;text-align:center;padding-top:140px}
+  .hero-stats{justify-content:center}
+  .eye-container{width:200px;height:200px}
+  .eye-socket{width:185px;height:185px}
+  #progression{flex-direction:column;gap:2rem}
+  .prog-left{position:relative;top:0;height:40vh;width:100%}
+}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(0,210,255,0.2);border-radius:5px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <span class="nav-logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+    CataractNet
+  </span>
+  <a href="#home">Home</a>
+  <a href="#progression">Vision</a>
+  <a href="#problem">Problem</a>
+  <a href="#data">Data</a>
+  <!-- <a href="#methodology">Method</a>
+  <a href="#evaluation">Results</a>
+  <a href="#attention">Grad-CAM</a>
+  <a href="#deployment">Deploy</a>
+  <a href="#strengths">Strengths</a>
+  <a href="#limitations">Limits</a> -->
+  <!-- <a href="#conclusion" class="nav-cta">Test the Model</a> -->
+  <a href="index_detailed.html" class="nav-cta">Technical Report</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════ HERO -->
+<section id="home">
+  <div class="scan-grid"></div>
+  <div class="hero-content fade">
+    <div class="hero-tag">AI for Healthcare · Research Report 2026</div>
+    <h1 class="hero-title">Accessible Eye Screening for Everyone</h1>
+    <p class="hero-sub">
+      Utilizing the <strong>Roshni Study (CMPD)</strong> to detect cataracts using standard smartphone photography. A calibrated ensemble deep learning framework designed for real-world, resource-limited screening environments.
+    </p>
+    <!-- <a href="#progression" class="cta-btn">Explore Research</a> -->
+        <a href="index_detailed.html" class="cta-btn">Explore Research</a>
+    <div class="hero-stats">
+      <div class="hstat"><span class="hstat-num">0.838</span><span class="hstat-label">Binary ROC-AUC</span></div>
+      <div class="hstat"><span class="hstat-num">93%</span><span class="hstat-label">Immature Recall</span></div>
+      <div class="hstat"><span class="hstat-num">2,876</span><span class="hstat-label">Total Images</span></div>
+      <div class="hstat"><span class="hstat-num">79.8%</span><span class="hstat-label">IOL Accuracy</span></div>
+    </div>
+  </div>
+  <div class="eye-container fade">
+    <div class="eye-rings"></div>
+    <div class="eye-rings"></div>
+    <div class="eye-rings"></div>
+    <div class="eye-socket">
+      <div class="scan-line"></div>
+      <div class="iris" id="eyeIris"></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════ PROGRESSION -->
+<div id="progression" class="bg-alt" style="display:flex;align-items:flex-start;gap:4rem;padding:6rem 8%">
+  <div class="prog-left">
+    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=900"
+         class="prog-img" id="visionImg" alt="Vision simulation">
+  </div>
+  <div class="prog-right">
+    <h2>"Roughly <em>1 in 6 people</em> has cataract —"</h2>
+    <p class="prog-intro">Scroll to see how the disease physically alters and obscures vision over time, and why early detection matters.</p>
+    <div class="scroll-step" data-stage="0">
+      <h3>Healthy Vision</h3>
+      <p>Crisp detail and accurate color representation. No obstruction in the crystalline lens. Full contrast and sharp focal clarity — what healthy eyes see every day.</p>
+    </div>
+    <div class="scroll-step" data-stage="1">
+      <h3>Early Stage</h3>
+      <p>Mild clouding begins as protein aggregates form. Images appear slightly dull or dim. Often unnoticed by the patient. This is the optimal window for intervention.</p>
+    </div>
+    <div class="scroll-step" data-stage="2">
+      <h3>Immature Cataract</h3>
+      <p>Significant yellowing and distortion. Contrast is heavily reduced. Reading and driving become difficult. Protein aggregation increases intra-lenticular light scattering.</p>
+    </div>
+    <div class="scroll-step" data-stage="3">
+      <h3>Mature Cataract</h3>
+      <p>Severe obstruction. Vision is reduced to a murky, solid blur. Dense nuclear opacity dominates. Surgical intervention — lens replacement with IOL — is the only treatment.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<script>
+// ── 1. Eye mouse tracking
+const iris = document.getElementById("eyeIris");
+document.addEventListener("mousemove", (e) => {
+  if (!iris) return;
+  const rect = iris.parentElement.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
+  const dist = Math.min(32, Math.hypot(e.clientX - cx, e.clientY - cy) / 10);
+  iris.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+});
+
+// ── 2. Cataract progression scroll
+const steps = document.querySelectorAll(".scroll-step");
+const vImg = document.getElementById("visionImg");
+const stages = [
+  {filter:"blur(0px) sepia(0%) brightness(100%)"},
+  {filter:"blur(3px) sepia(15%) brightness(92%)"},
+  {filter:"blur(10px) sepia(45%) brightness(76%)"},
+  {filter:"blur(28px) sepia(75%) brightness(58%)"}
+];
+window.addEventListener("scroll", () => {
+  let cur = 0;
+  steps.forEach((s, i) => {
+    const r = s.getBoundingClientRect();
+    if (r.top < window.innerHeight * 0.55) cur = i;
+  });
+  if (vImg) vImg.style.filter = stages[cur].filter;
+  steps.forEach((s, i) => s.classList.toggle("active", i === cur));
+});
+
+// ── 3. Fade-in observer
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add("in");
+  });
+}, {threshold: 0.1});
+document.querySelectorAll(".fade").forEach(el => io.observe(el));
+
+// ── 4. Active nav link
+const secs = document.querySelectorAll("section[id], div[id]");
+const links = document.querySelectorAll("nav a[href^='#']");
+window.addEventListener("scroll", () => {
+  let cur = "";
+  secs.forEach(s => { if (window.scrollY >= s.offsetTop - 160) cur = s.id; });
+  links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + cur));
+});
+</script>
+</body>
+</html>
